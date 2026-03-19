@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: create_users_table
+      author: Labatsevich Ihar
+      changes:
+        - sqlFile:
+            path: db/changelog/sql/01.create_users_table.sql
+            encoding: utf8
+  - changeSet:
+      id: create_payment_cards_table
+      author: Labatsevich Ihar
+      changes:
+        - sqlFile:
+            path: db/changelog/sql/02.create_payment_cards_table.sql
+            encoding: utf8
+  - changeSet:
+      id: create_indexes
+      author: Labatsevich Ihar
+      changes:
+        - sqlFile:
+            path: db/changelog/sql/03.create_indexes.sql
+            encoding: utf8
+  - changeSet:
+      id: fill_users_table
+      author: Labatsevich Ihar
+      changes:
+        - sqlFile:
+            path: db/changelog/sql/04.fill_users_table.sql
+            encoding: utf8
+  - changeSet:
+      id: fill_payment_card_table
+      author: Labatsevich Ihar
+      changes:
+        - sqlFile:
+            path: db/changelog/sql/05.fill_payment_card_table.sql
+            encoding: utf8

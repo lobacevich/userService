@@ -1,0 +1,15 @@
+spring:
+  main:
+    banner-mode: off
+    lazy-initialization: true
+
+  jpa:
+    show-sql: false
+
+logging:
+  level:
+    root: OFF
+    org.testcontainers: OFF
+    org.springframework: OFF
+    org.hibernate: OFF
+    org.apache: OFF
