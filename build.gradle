@@ -54,7 +54,7 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.register('startDockerContainers', Exec) {
     group = 'docker'
-    commandLine 'docker-compose', 'up', "-d"
+    commandLine 'docker-compose', 'up', '--build', '-d'
 }
 
 tasks.register('stopDockerContainers', Exec) {

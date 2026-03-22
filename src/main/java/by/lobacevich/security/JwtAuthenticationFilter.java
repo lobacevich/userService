@@ -1,12 +1,13 @@
 package by.lobacevich.security;
 
-import by.lobacevich.exception.AuthTokenException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -25,34 +26,40 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private static final String REQUEST_HEADER = "Authorization";
     private static final String TOKEN_PREFIX = "Bearer ";
 
-    private final JwtTokenProvider tokenProvider;
+    private final JwtTokenService tokenService;
+    private final JwtAuthenticationEntryPoint entryPoint;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String token = getTokenFromRequest(request);
-        Claims claims = tokenProvider.parse(token);
+        try {
+            String tokenFromHeader = request.getHeader(REQUEST_HEADER);
+            if (!StringUtils.hasText(tokenFromHeader) || !tokenFromHeader.startsWith(TOKEN_PREFIX)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            String token = tokenFromHeader.substring(TOKEN_PREFIX.length());
+            Claims claims = tokenService.parse(token);
+
+            SecurityContextHolder.getContext().setAuthentication(buildAuth(claims));
+
+            filterChain.doFilter(request, response);
+        } catch (JwtException | IllegalArgumentException e) {
+            SecurityContextHolder.clearContext();
+            entryPoint.commence(request, response,
+                    new AuthenticationCredentialsNotFoundException("Invalid or expired token", e));
+        }
+    }
+
+    private UsernamePasswordAuthenticationToken buildAuth(Claims claims) {
         UserPrincipal principal = new UserPrincipal(Long.parseLong(claims.getSubject()));
         List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(claims.get("role", String.class)));
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+        return new UsernamePasswordAuthenticationToken(
                 principal,
                 null,
                 authorities
         );
-        SecurityContextHolder.getContext().setAuthentication(authToken);
-
-        filterChain.doFilter(request, response);
-    }
-
-
-    private String getTokenFromRequest(HttpServletRequest request) {
-        String tokenFromHeader = request.getHeader(REQUEST_HEADER);
-        if (StringUtils.hasText(tokenFromHeader) && tokenFromHeader.startsWith(TOKEN_PREFIX)) {
-            return tokenFromHeader.split(" ")[1];
-        } else {
-            throw new AuthTokenException("Token is absent or invalid format");
-        }
     }
 }
