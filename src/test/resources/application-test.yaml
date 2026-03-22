@@ -15,3 +15,6 @@ logging:
     org.springframework: OFF
     org.hibernate: OFF
     org.apache: OFF
+
+jwt:
+  secret: VKs3X6p9e8R2tY5w7z9C1f4H6J8kL0nP2qR4sT6uV8wX0yZ2b4c6d8e0f2g4h6j8k0
