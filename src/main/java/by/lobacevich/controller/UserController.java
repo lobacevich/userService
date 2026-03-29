@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,11 +28,13 @@ public class UserController {
 
     private final UserService service;
 
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.getUserId()")
     @GetMapping("/{id}")
     public ResponseEntity<UserWithCardsDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping
     public ResponseEntity<Page<UserDtoResponse>> findAll(
             @RequestParam(value = "firstname", required = false) String firstname,
@@ -41,23 +44,27 @@ public class UserController {
         return ResponseEntity.ok(service.findUsers(firstname, surname, number, size));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<UserDtoResponse> createUser(@Valid @RequestBody UserDtoRequest request) {
         return new ResponseEntity<>(service.create(request), HttpStatus.CREATED);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/{id}/activate")
     public void activate(@PathVariable Long id) {
         service.activate(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/{id}/deactivate")
     public void deactivate(@PathVariable Long id) {
         service.deactivate(id);
     }
 
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.getUserId()")
     @PutMapping("/{id}")
     public ResponseEntity<UserDtoResponse> update(@Valid @RequestBody UserDtoRequest dtoRequest,
                                                   @PathVariable Long id) {

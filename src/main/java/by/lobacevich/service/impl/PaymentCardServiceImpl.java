@@ -10,6 +10,7 @@ import by.lobacevich.exception.InvalidDataException;
 import by.lobacevich.mapper.PaymentCardMapper;
 import by.lobacevich.repository.PaymentCardRepository;
 import by.lobacevich.repository.UserRepository;
+import by.lobacevich.security.SecurityUtils;
 import by.lobacevich.service.PaymentCardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.CacheManager;
@@ -107,5 +108,11 @@ public class PaymentCardServiceImpl implements PaymentCardService {
                 new EntityNotFoundException("Card not found with id " + id));
         Objects.requireNonNull(cacheManager.getCache("users")).evict(card.getUser().getId());
         repository.deactivateCard(id);
+    }
+
+    public boolean isOwner(Long id) {
+        PaymentCard card = repository.findByIdWithUser(id).orElseThrow(() ->
+                new EntityNotFoundException("Card not found with id " + id));
+        return SecurityUtils.getPrincipalId().equals(card.getUser().getId());
     }
 }
