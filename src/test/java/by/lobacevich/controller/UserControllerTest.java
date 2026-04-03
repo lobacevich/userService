@@ -1,6 +1,5 @@
 package by.lobacevich.controller;
 
-import by.lobacevich.util.TestAuthUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -15,10 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-public class UserControllerTest extends BaseIntegrationTest {
-
-    public static final String ADMIN = "ROLE_ADMIN";
-    public static final String USER = "ROLE_USER";
+class UserControllerTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -34,7 +30,8 @@ public class UserControllerTest extends BaseIntegrationTest {
                 }
                 """;
         mockMvc.perform(post("/users")
-                        .with(TestAuthUtil.user(1L, ADMIN))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createJson))
                 .andExpect(status().isCreated())
@@ -53,7 +50,8 @@ public class UserControllerTest extends BaseIntegrationTest {
                 }
                 """;
         mockMvc.perform(put("/users/1")
-                        .with(TestAuthUtil.user(1L, USER))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_USER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateJson))
                 .andExpect(status().isOk())
@@ -64,21 +62,24 @@ public class UserControllerTest extends BaseIntegrationTest {
     @Test
     void deactivate_ShouldSetActiveFieldFalse() throws Exception {
         mockMvc.perform(patch("/users/1/deactivate")
-                        .with(TestAuthUtil.user(1L, ADMIN)))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void activate_ShouldSetActiveFieldTrue() throws Exception {
         mockMvc.perform(patch("/users/1/activate")
-                        .with(TestAuthUtil.user(1L, ADMIN)))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void findById_ShouldReturnUserWithCards() throws Exception {
         mockMvc.perform(get("/users/1")
-                        .with(TestAuthUtil.user(1L, USER)))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_USER"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.paymentCards").isArray());
     }
@@ -92,14 +93,16 @@ public class UserControllerTest extends BaseIntegrationTest {
     @Test
     void findById_ShouldReturnForbiddenStatus() throws Exception {
         mockMvc.perform(get("/users/1")
-                        .with(TestAuthUtil.user(2L, USER)))
+                        .header("X-User-Id", "2")
+                        .header("X-Role", "ROLE_USER"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void findAll_ShouldReturnPageWithUserDtoResponse() throws Exception {
         mockMvc.perform(get("/users")
-                        .with(TestAuthUtil.user(1L, ADMIN)))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray());
     }
