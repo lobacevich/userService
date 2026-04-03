@@ -22,21 +22,22 @@ import java.util.List;
 @RestControllerAdvice
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private static final String ERROR_LOG_FRAME = "{}, {}, {}";
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorDto> handleEntityNotFoundException(EntityNotFoundException e) {
-        log.error("{}/{}", e.getMessage(), e.getClass().getSimpleName());
         return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(InvalidDataException.class)
     public ResponseEntity<ErrorDto> handleInvalidDataException(InvalidDataException e) {
-        log.error("{}/{}", e.getMessage(), e.getClass().getSimpleName());
+        log.error(ERROR_LOG_FRAME, e.getMessage(), e.getClass().getSimpleName(), e.getStackTrace());
         return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorDto> handleAuthorizationDeniedException(AuthorizationDeniedException e) {
-        log.error("{}/{}", e.getMessage(), e.getClass().getSimpleName());
+        log.error(ERROR_LOG_FRAME, e.getMessage(), e.getClass().getSimpleName(), e.getStackTrace());
         return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.FORBIDDEN);
     }
 
@@ -47,12 +48,13 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
                 .stream()
                 .map(FieldError::getDefaultMessage)
                 .toList();
+        log.error(ERROR_LOG_FRAME, e.getMessage(), e.getClass().getSimpleName(), e.getStackTrace());
         return new ResponseEntity<>(new ErrorDto(String.join(", ", errors)), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDto> handleException(Exception e) {
-        log.error("{}/{}", e.getMessage(), e.getClass().getSimpleName());
+        log.error(ERROR_LOG_FRAME, e.getMessage(), e.getClass().getSimpleName(), e.getStackTrace());
         return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }
