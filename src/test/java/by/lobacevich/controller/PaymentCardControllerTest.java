@@ -1,6 +1,5 @@
 package by.lobacevich.controller;
 
-import by.lobacevich.util.TestAuthUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -11,15 +10,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
-public class PaymentCardControllerTest extends BaseIntegrationTest {
-
-    public static final String ADMIN = "ROLE_ADMIN";
-    public static final String USER = "ROLE_USER";
+class PaymentCardControllerTest extends BaseIntegrationTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -35,7 +30,8 @@ public class PaymentCardControllerTest extends BaseIntegrationTest {
                 }
                 """;
         mockMvc.perform(post("/cards")
-                        .with(TestAuthUtil.user(1L, ADMIN))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_ADMIN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(createJson))
                 .andExpect(status().isCreated())
@@ -54,7 +50,8 @@ public class PaymentCardControllerTest extends BaseIntegrationTest {
                 }
                 """;
         mockMvc.perform(put("/cards/1")
-                        .with(TestAuthUtil.user(1L, USER))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_USER")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(updateJson))
                 .andExpect(status().isOk())
@@ -65,22 +62,24 @@ public class PaymentCardControllerTest extends BaseIntegrationTest {
     @Test
     void deactivate_ShouldSetActiveFieldFalse() throws Exception {
         mockMvc.perform(patch("/cards/1/deactivate")
-                        .with(TestAuthUtil.user(1L, ADMIN)))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void activate_ShouldSetActiveFieldTrue() throws Exception {
         mockMvc.perform(patch("/cards/1/activate")
-                        .with(TestAuthUtil.user(1L, ADMIN)))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk());
     }
 
     @Test
     void findByUserId_ShouldReturnListOfPayCardDtoResponseByUserId() throws Exception {
         mockMvc.perform(get("/cards/user/1")
-                        .with(TestAuthUtil.user(1L, USER)))
-                .andDo(print())
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_USER"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
     }
@@ -88,22 +87,22 @@ public class PaymentCardControllerTest extends BaseIntegrationTest {
     @Test
     void findByUserId_ShouldReturnUnauthorizedStatus() throws Exception {
         mockMvc.perform(get("/cards/user/1"))
-                .andDo(print())
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     void findByUserId_ShouldReturnForbiddenStatus() throws Exception {
         mockMvc.perform(get("/cards/user/1")
-                        .with(TestAuthUtil.user(2L, USER)))
-                .andDo(print())
+                        .header("X-User-Id", "2")
+                        .header("X-Role", "ROLE_USER"))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     void findById_ShouldReturnPayCardDtoResponse() throws Exception {
         mockMvc.perform(get("/cards/1")
-                        .with(TestAuthUtil.user(1L, USER)))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_USER"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.number").isNotEmpty());
     }
@@ -111,7 +110,8 @@ public class PaymentCardControllerTest extends BaseIntegrationTest {
     @Test
     void findAll_ShouldReturnPageWithUserDtoResponse() throws Exception {
         mockMvc.perform(get("/cards")
-                        .with(TestAuthUtil.user(1L, ADMIN)))
+                        .header("X-User-Id", "1")
+                        .header("X-Role", "ROLE_ADMIN"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray());
     }

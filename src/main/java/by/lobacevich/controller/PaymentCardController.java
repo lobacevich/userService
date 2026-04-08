@@ -43,7 +43,7 @@ public class PaymentCardController {
         return ResponseEntity.ok(service.findCards(number, size));
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #id == principal.getUserId()")
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.userId()")
     @GetMapping("/user/{id}")
     public ResponseEntity<List<PayCardDtoResponse>> findByUserId(@PathVariable Long id) {
         return ResponseEntity.ok(service.findCardsByUserId(id));

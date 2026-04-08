@@ -3,6 +3,7 @@ package by.lobacevich.exceptionhandler;
 import by.lobacevich.dto.response.ErrorDto;
 import by.lobacevich.exception.EntityNotFoundException;
 import by.lobacevich.exception.InvalidDataException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -17,22 +18,27 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 
 import java.util.List;
 
+@Slf4j
 @RestControllerAdvice
 public class AppExceptionHandler extends ResponseEntityExceptionHandler {
 
+    private static final String ERROR_LOG_FRAME = "{}, {}, {}";
+
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<ErrorDto> handleEntityNotFoundException(EntityNotFoundException e) {
-        return new ResponseEntity<>(new ErrorDto(e.getMessage(), e.getClass().getSimpleName()), HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler(InvalidDataException.class)
-    public ResponseEntity<ErrorDto> handleDataBaseException(InvalidDataException e) {
-        return new ResponseEntity<>(new ErrorDto(e.getMessage(), e.getClass().getSimpleName()), HttpStatus.BAD_REQUEST);
+    public ResponseEntity<ErrorDto> handleInvalidDataException(InvalidDataException e) {
+        log.error(ERROR_LOG_FRAME, e.getMessage(), e.getClass().getSimpleName(), e.getStackTrace());
+        return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(AuthorizationDeniedException.class)
     public ResponseEntity<ErrorDto> handleAuthorizationDeniedException(AuthorizationDeniedException e) {
-        return new ResponseEntity<>(new ErrorDto(e.getMessage(), e.getClass().getSimpleName()), HttpStatus.FORBIDDEN);
+        log.error(ERROR_LOG_FRAME, e.getMessage(), e.getClass().getSimpleName(), e.getStackTrace());
+        return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.FORBIDDEN);
     }
 
     @Override
@@ -42,11 +48,13 @@ public class AppExceptionHandler extends ResponseEntityExceptionHandler {
                 .stream()
                 .map(FieldError::getDefaultMessage)
                 .toList();
-        return new ResponseEntity<>(new ErrorDto(String.join(", ", errors), e.getClass().getSimpleName()), HttpStatus.BAD_REQUEST);
+        log.error(ERROR_LOG_FRAME, e.getMessage(), e.getClass().getSimpleName(), e.getStackTrace());
+        return new ResponseEntity<>(new ErrorDto(String.join(", ", errors)), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorDto> handleException(Exception e) {
-        return new ResponseEntity<>(new ErrorDto(e.getMessage(), e.getClass().getSimpleName()), HttpStatus.BAD_REQUEST);
+        log.error(ERROR_LOG_FRAME, e.getMessage(), e.getClass().getSimpleName(), e.getStackTrace());
+        return new ResponseEntity<>(new ErrorDto(e.getMessage()), HttpStatus.BAD_REQUEST);
     }
 }

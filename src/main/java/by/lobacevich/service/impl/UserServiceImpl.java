@@ -1,5 +1,6 @@
 package by.lobacevich.service.impl;
 
+import by.lobacevich.dto.request.IdsDtoRequest;
 import by.lobacevich.dto.request.UserDtoRequest;
 import by.lobacevich.dto.response.UserDtoResponse;
 import by.lobacevich.dto.response.UserWithCardsDto;
@@ -21,6 +22,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -71,6 +75,13 @@ public class UserServiceImpl implements UserService {
         Pageable pageable = PageRequest.of(number, size);
         Specification<User> spec = UserSpecification.filterBy(firstname, surname);
         return repository.findAll(spec, pageable).map(mapper::userToDto);
+    }
+
+    @Override
+    public Set<UserDtoResponse> getByIds(IdsDtoRequest idsDtoRequest) {
+        return repository.findByIdIn(idsDtoRequest.ids()).stream()
+                .map(mapper::userToDto)
+                .collect(Collectors.toSet());
     }
 
     @CacheEvict(value = "users", key = "#id")

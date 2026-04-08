@@ -42,6 +42,3 @@ logging:
       type.descriptor.sql.BasicBinder: trace
     org.springframework: warn
     org.springframework.cache: trace
-
-jwt:
-  secret: ${JWT_SECRET}

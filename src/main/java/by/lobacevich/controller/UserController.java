@@ -1,5 +1,6 @@
 package by.lobacevich.controller;
 
+import by.lobacevich.dto.request.IdsDtoRequest;
 import by.lobacevich.dto.request.UserDtoRequest;
 import by.lobacevich.dto.response.UserDtoResponse;
 import by.lobacevich.dto.response.UserWithCardsDto;
@@ -21,6 +22,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/users")
@@ -28,7 +31,7 @@ public class UserController {
 
     private final UserService service;
 
-    @PreAuthorize("hasRole('ADMIN') or #id == principal.getUserId()")
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.userId()")
     @GetMapping("/{id}")
     public ResponseEntity<UserWithCardsDto> findById(@PathVariable Long id) {
         return ResponseEntity.ok(service.findById(id));
@@ -51,6 +54,12 @@ public class UserController {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/batch")
+    public ResponseEntity<Set<UserDtoResponse>> getUsersByIds(@RequestBody IdsDtoRequest idsDtoRequest) {
+        return ResponseEntity.ok(service.getByIds(idsDtoRequest));
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("/{id}/activate")
     public void activate(@PathVariable Long id) {
@@ -64,7 +73,7 @@ public class UserController {
         service.deactivate(id);
     }
 
-    @PreAuthorize("hasRole('ADMIN') or #id == principal.getUserId()")
+    @PreAuthorize("hasRole('ADMIN') or #id == principal.userId()")
     @PutMapping("/{id}")
     public ResponseEntity<UserDtoResponse> update(@Valid @RequestBody UserDtoRequest dtoRequest,
                                                   @PathVariable Long id) {

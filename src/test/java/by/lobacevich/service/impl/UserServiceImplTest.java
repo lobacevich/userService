@@ -1,5 +1,6 @@
 package by.lobacevich.service.impl;
 
+import by.lobacevich.dto.request.IdsDtoRequest;
 import by.lobacevich.dto.request.UserDtoRequest;
 import by.lobacevich.dto.response.UserDtoResponse;
 import by.lobacevich.dto.response.UserWithCardsDto;
@@ -22,6 +23,7 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -54,6 +56,9 @@ class UserServiceImplTest {
 
     @Mock
     UserWithCardsDto dtoWithCards;
+
+    @Mock
+    IdsDtoRequest idsDtoRequest;
 
     @Mock
     User user;
@@ -173,5 +178,16 @@ class UserServiceImplTest {
         when(repository.deactivateUser(ID)).thenReturn(0);
 
         assertThrows(EntityNotFoundException.class, () -> service.deactivate(ID));
+    }
+
+    @Test
+    void getByIds_ShouldReturnSetOfUserDtoResponse() {
+        when(idsDtoRequest.ids()).thenReturn(List.of(ID));
+        when(repository.findByIdIn(List.of(ID))).thenReturn(List.of(user));
+        when(mapper.userToDto(user)).thenReturn(dtoResponse);
+
+        Set<UserDtoResponse> actual = service.getByIds(idsDtoRequest);
+
+        assertEquals(Set.of(dtoResponse), actual);
     }
 }
