@@ -102,4 +102,11 @@ public class UserServiceImpl implements UserService {
         }
         cardRepository.deactivateByUserId(id);
     }
+
+    @CacheEvict(value = "users", key = "#id")
+    @Transactional
+    @Override
+    public void delete(Long id) {
+        repository.deleteById(id);
+    }
 }

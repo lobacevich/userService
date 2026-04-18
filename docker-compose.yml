@@ -3,7 +3,7 @@ services:
     build: .
     container_name: user-service
     ports:
-      - "8082:8080"
+      - "8082:8082"
     depends_on:
       postgres:
         condition: service_healthy
@@ -20,7 +20,7 @@ services:
 
   postgres:
     image: postgres:17.6
-    container_name: postgres
+    container_name: postgres-user
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -37,7 +37,7 @@ services:
 
   redis:
     image: redis:8.2.1
-    container_name: redis
+    container_name: redis-user
     ports:
       - "6379:6379"
     healthcheck:
@@ -47,4 +47,4 @@ services:
       retries: 5
 
 volumes:
-  postgres_data:
+  user_postgres_data:
