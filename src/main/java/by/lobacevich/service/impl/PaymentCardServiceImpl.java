@@ -30,6 +30,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PaymentCardServiceImpl implements PaymentCardService {
 
+    private static final String CARD_NOT_FOUND = "Card not found with id ";
+
     private final PaymentCardRepository repository;
     private final PaymentCardMapper mapper;
     private final UserRepository userRepository;
@@ -59,7 +61,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     public PayCardDtoResponse update(PayCardDtoRequest dto, Long id) {
         PaymentCard oldCard = repository.findByIdWithUser(id).orElseThrow(() ->
-                new EntityNotFoundException("Card not found with id " + id));
+                new EntityNotFoundException(CARD_NOT_FOUND + id));
         PaymentCard newCard = mapper.dtoToEntity(dto);
         newCard.setId(oldCard.getId());
         newCard.setUser(oldCard.getUser());
@@ -75,7 +77,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     public PayCardDtoResponse findById(Long id) {
         return mapper.entityToDto(repository.findById(id).orElseThrow(() ->
-                new EntityNotFoundException("Card not found with id " + id)));
+                new EntityNotFoundException(CARD_NOT_FOUND + id)));
     }
 
     @Override
@@ -96,7 +98,7 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     public void activate(Long id) {
         PaymentCard card = repository.findByIdWithUser(id).orElseThrow(() ->
-                new EntityNotFoundException("Card not found with id " + id));
+                new EntityNotFoundException(CARD_NOT_FOUND + id));
         Objects.requireNonNull(cacheManager.getCache("users")).evict(card.getUser().getId());
         repository.activateCard(id);
     }
@@ -105,14 +107,14 @@ public class PaymentCardServiceImpl implements PaymentCardService {
     @Override
     public void deactivate(Long id) {
         PaymentCard card = repository.findByIdWithUser(id).orElseThrow(() ->
-                new EntityNotFoundException("Card not found with id " + id));
+                new EntityNotFoundException(CARD_NOT_FOUND + id));
         Objects.requireNonNull(cacheManager.getCache("users")).evict(card.getUser().getId());
         repository.deactivateCard(id);
     }
 
     public boolean isOwner(Long id) {
         PaymentCard card = repository.findByIdWithUser(id).orElseThrow(() ->
-                new EntityNotFoundException("Card not found with id " + id));
+                new EntityNotFoundException(CARD_NOT_FOUND + id));
         return SecurityUtils.getPrincipalId().equals(card.getUser().getId());
     }
 }
